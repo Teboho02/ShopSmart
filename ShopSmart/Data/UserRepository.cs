@@ -42,4 +42,7 @@ public class UserRepository
         _data.Users.AsReadOnly();
 
     public int NextUserId() => _nextId++;
+
+    /// <summary>Persists the current user list (e.g. after a wallet balance change).</summary>
+    public void Save() => JsonFileStore.Save(FilePath, _data.Users);
 }

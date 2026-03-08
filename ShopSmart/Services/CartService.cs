@@ -40,4 +40,27 @@ public class CartService : ICartService
 
     public IReadOnlyList<CartItem> GetCart(User user) =>
         _repo.GetByUser(user.Id);
+
+    public void UpdateQuantity(User user, int productId, int newQuantity)
+    {
+        if (newQuantity < 0)
+            throw new ValidationException("Quantity cannot be negative.");
+
+        var item = _repo.FindItem(user.Id, productId)
+            ?? throw new ValidationException("That product is not in your cart.");
+
+        if (newQuantity == 0)
+        {
+            _repo.Remove(item);
+            return;
+        }
+
+        var product = _productService.GetActiveById(productId)
+            ?? throw new ValidationException("That product is no longer available.");
+
+        if (newQuantity > product.Stock)
+            throw new ValidationException($"Only {product.Stock} unit(s) in stock.");
+
+        item.Quantity = newQuantity;
+    }
 }

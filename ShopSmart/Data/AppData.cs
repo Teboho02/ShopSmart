@@ -12,4 +12,6 @@ public class AppData
     public List<User>     Users     { get; } = [];
     public List<Product>  Products  { get; } = [];
     public List<CartItem> CartItems { get; } = [];   // session-only, not persisted
+    public List<Order>    Orders    { get; } = [];
+    public List<Payment>  Payments  { get; } = [];
 }

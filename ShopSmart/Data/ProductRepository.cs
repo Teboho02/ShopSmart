@@ -37,4 +37,7 @@ public class ProductRepository
         _data.Products.Where(p => p.IsActive).ToList().AsReadOnly();
 
     public int NextProductId() => _nextId++;
+
+    /// <summary>Persists the current product list (e.g. after a stock change).</summary>
+    public void Save() => JsonFileStore.Save(FilePath, _data.Products);
 }
