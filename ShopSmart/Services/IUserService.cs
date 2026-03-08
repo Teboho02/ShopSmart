@@ -22,4 +22,7 @@ public interface IUserService
 
     User? FindById(int id);
     User? FindByUsername(string username);
+
+    /// <summary>Adds funds to the user's wallet. Throws <see cref="ValidationException"/> if amount is not positive.</summary>
+    void TopUpWallet(User user, decimal amount);
 }

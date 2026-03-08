@@ -13,8 +13,9 @@ public class CustomerMenuView
     private readonly ViewCartView       _viewCartView;
     private readonly UpdateCartView     _updateCartView;
     private readonly CheckoutView       _checkoutView;
-
-    // Future: IOrderService views, IReviewService added here.
+    private readonly WalletBalanceView  _walletBalanceView;
+    private readonly AddWalletFundsView _addWalletFundsView;
+    private readonly OrderHistoryView   _orderHistoryView;
 
     public CustomerMenuView(
         IProductService    productService,
@@ -24,16 +25,22 @@ public class CustomerMenuView
         AddToCartView      addToCartView,
         ViewCartView       viewCartView,
         UpdateCartView     updateCartView,
-        CheckoutView       checkoutView)
+        CheckoutView       checkoutView,
+        WalletBalanceView  walletBalanceView,
+        AddWalletFundsView addWalletFundsView,
+        OrderHistoryView   orderHistoryView)
     {
-        _productService = productService;
-        _browseView     = browseView;
-        _searchView     = searchView;
-        _cartService    = cartService;
-        _addToCartView  = addToCartView;
-        _viewCartView   = viewCartView;
-        _updateCartView = updateCartView;
-        _checkoutView   = checkoutView;
+        _productService     = productService;
+        _browseView         = browseView;
+        _searchView         = searchView;
+        _cartService        = cartService;
+        _addToCartView      = addToCartView;
+        _viewCartView       = viewCartView;
+        _updateCartView     = updateCartView;
+        _checkoutView       = checkoutView;
+        _walletBalanceView  = walletBalanceView;
+        _addWalletFundsView = addWalletFundsView;
+        _orderHistoryView   = orderHistoryView;
     }
 
     /// <summary>Runs the customer menu loop. Returns when the user logs out.</summary>
@@ -49,7 +56,9 @@ public class CustomerMenuView
                 "View Cart",
                 "Update Cart",
                 "Checkout",
-                // Issues #9–#13 options will be inserted above Logout.
+                "View Wallet Balance",
+                "Add Wallet Funds",
+                "Order History",
                 "Logout"
             ];
 
@@ -57,14 +66,17 @@ public class CustomerMenuView
 
             switch (choice)
             {
-                case 1: _browseView.Run();                    break;
-                case 2: _searchView.Run();                    break;
-                case 3: _addToCartView.Run(currentUser);      break;
-                case 4: _viewCartView.Run(currentUser);       break;
-                case 5: _updateCartView.Run(currentUser);     break;
-                case 6: _checkoutView.Run(currentUser);       break;
+                case 1: _browseView.Run();                        break;
+                case 2: _searchView.Run();                        break;
+                case 3: _addToCartView.Run(currentUser);          break;
+                case 4: _viewCartView.Run(currentUser);           break;
+                case 5: _updateCartView.Run(currentUser);         break;
+                case 6: _checkoutView.Run(currentUser);           break;
+                case 7: _walletBalanceView.Run(currentUser);      break;
+                case 8: _addWalletFundsView.Run(currentUser);     break;
+                case 9: _orderHistoryView.Run(currentUser);       break;
 
-                case 7: // Logout (always last)
+                case 10: // Logout (always last)
                     ConsoleHelper.WriteInfo("Logged out successfully.");
                     ConsoleHelper.PressAnyKey();
                     return;

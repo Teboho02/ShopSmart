@@ -48,6 +48,14 @@ public class UserService : IUserService
     public User? FindById(int id)            => _repo.FindById(id);
     public User? FindByUsername(string name) => _repo.FindByUsername(name);
 
+    public void TopUpWallet(User user, decimal amount)
+    {
+        if (amount <= 0)
+            throw new ValidationException("Amount must be greater than zero.");
+        user.WalletBalance += amount;
+        _repo.Save();
+    }
+
     // --- Validators ---
 
     private static void ValidateUsername(string username)

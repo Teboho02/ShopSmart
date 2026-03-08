@@ -92,4 +92,13 @@ public class OrderService : IOrderService
 
         return order;
     }
+
+    public IReadOnlyList<Order> GetOrderHistory(int userId) =>
+        _orderRepo.GetByUser(userId)
+                  .OrderByDescending(o => o.OrderDate)
+                  .ToList()
+                  .AsReadOnly();
+
+    public Payment? GetPaymentForOrder(int orderId) =>
+        _paymentRepo.FindByOrderId(orderId);
 }

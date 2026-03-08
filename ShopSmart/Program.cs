@@ -24,10 +24,14 @@ var addToCartView     = new ShopSmart.UI.AddToCartView(productService, cartServi
 var viewCartView      = new ShopSmart.UI.ViewCartView(cartService);
 var updateCartView    = new ShopSmart.UI.UpdateCartView(cartService);
 var checkoutView      = new ShopSmart.UI.CheckoutView(cartService, orderService);
-var customerMenuView  = new ShopSmart.UI.CustomerMenuView(
-                            productService, browseView, searchView,
-                            cartService, addToCartView,
-                            viewCartView, updateCartView, checkoutView);
+var walletBalanceView  = new ShopSmart.UI.WalletBalanceView();
+var addWalletFundsView = new ShopSmart.UI.AddWalletFundsView(userService);
+var orderHistoryView   = new ShopSmart.UI.OrderHistoryView(orderService);
+var customerMenuView   = new ShopSmart.UI.CustomerMenuView(
+                             productService, browseView, searchView,
+                             cartService, addToCartView,
+                             viewCartView, updateCartView, checkoutView,
+                             walletBalanceView, addWalletFundsView, orderHistoryView);
 var adminMenuView     = new ShopSmart.UI.AdminMenuView();
 var mainMenu          = new ShopSmart.UI.MainMenuView(
                             userService, registrationView, loginView,
