@@ -9,6 +9,7 @@ using ShopSmart.Models;
 /// </summary>
 public class AppData
 {
-    public List<User>    Users    { get; } = [];
-    public List<Product> Products { get; } = [];
+    public List<User>     Users     { get; } = [];
+    public List<Product>  Products  { get; } = [];
+    public List<CartItem> CartItems { get; } = [];   // session-only, not persisted
 }

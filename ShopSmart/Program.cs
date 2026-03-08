@@ -11,8 +11,12 @@ var userService       = new ShopSmart.Services.UserService(userRepository);
 var productService    = new ShopSmart.Services.ProductService(productRepository);
 var registrationView  = new ShopSmart.UI.UserRegistrationView(userService);
 var loginView         = new ShopSmart.UI.UserLoginView(userService);
+var cartRepository    = new ShopSmart.Data.CartRepository(appData);
+var cartService       = new ShopSmart.Services.CartService(cartRepository, productService);
 var browseView        = new ShopSmart.UI.BrowseProductsView(productService);
-var customerMenuView  = new ShopSmart.UI.CustomerMenuView(productService, browseView);
+var searchView        = new ShopSmart.UI.SearchProductsView(productService);
+var addToCartView     = new ShopSmart.UI.AddToCartView(productService, cartService);
+var customerMenuView  = new ShopSmart.UI.CustomerMenuView(productService, browseView, searchView, cartService, addToCartView);
 var adminMenuView     = new ShopSmart.UI.AdminMenuView();
 var mainMenu          = new ShopSmart.UI.MainMenuView(userService, registrationView, loginView, customerMenuView, adminMenuView);
 

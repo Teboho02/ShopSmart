@@ -18,4 +18,15 @@ public class ProductService : IProductService
 
     public Product? GetActiveById(int id) =>
         _repo.GetAllActive().FirstOrDefault(p => p.Id == id);
+
+    public IReadOnlyList<Product> SearchActive(string searchTerm) =>
+        _repo.GetAllActive()
+             .Where(p =>
+                 p.Name.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)        ||
+                 p.Description.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
+                 p.Category.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
+             .OrderBy(p => p.Category)
+             .ThenBy(p => p.Name)
+             .ToList()
+             .AsReadOnly();
 }
