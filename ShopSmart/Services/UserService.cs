@@ -33,6 +33,18 @@ public class UserService : IUserService
         return user;
     }
 
+    public User Login(string username, string password)
+    {
+        if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
+            throw new ValidationException("Invalid username or password.");
+
+        var user = _repo.FindByUsername(username);
+        if (user is null || user.PasswordHash != HashPassword(password))
+            throw new ValidationException("Invalid username or password.");
+
+        return user;
+    }
+
     public User? FindById(int id)            => _repo.FindById(id);
     public User? FindByUsername(string name) => _repo.FindByUsername(name);
 

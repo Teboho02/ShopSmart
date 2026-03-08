@@ -12,6 +12,14 @@ public interface IUserService
     /// </summary>
     User Register(string username, string email, string password, UserRole role);
 
+    /// <summary>
+    /// Authenticates a user by username and password.
+    /// Returns the User on success.
+    /// Throws <see cref="ValidationException"/> with a generic message on failure
+    /// (never reveals whether the username or password was wrong).
+    /// </summary>
+    User Login(string username, string password);
+
     User? FindById(int id);
     User? FindByUsername(string username);
 }

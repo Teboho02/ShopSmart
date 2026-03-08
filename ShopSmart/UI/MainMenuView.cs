@@ -1,18 +1,28 @@
 namespace ShopSmart.UI;
 
+using ShopSmart.Enums;
 using ShopSmart.Services;
 
 public class MainMenuView
 {
     private readonly IUserService         _userService;
     private readonly UserRegistrationView _registrationView;
+    private readonly UserLoginView        _loginView;
+    private readonly CustomerMenuView     _customerMenuView;
+    private readonly AdminMenuView        _adminMenuView;
 
-    // Future: IAuthService, customer/admin menu views added as constructor parameters.
-
-    public MainMenuView(IUserService userService, UserRegistrationView registrationView)
+    public MainMenuView(
+        IUserService         userService,
+        UserRegistrationView registrationView,
+        UserLoginView        loginView,
+        CustomerMenuView     customerMenuView,
+        AdminMenuView        adminMenuView)
     {
         _userService      = userService;
         _registrationView = registrationView;
+        _loginView        = loginView;
+        _customerMenuView = customerMenuView;
+        _adminMenuView    = adminMenuView;
     }
 
     /// <summary>Runs the main menu loop. Only exits when the user chooses Quit.</summary>
@@ -23,7 +33,7 @@ public class MainMenuView
             string[] options =
             [
                 "Register",
-                // Issue #2: "Login" will be inserted here
+                "Login",
                 "Quit"
             ];
 
@@ -35,9 +45,15 @@ public class MainMenuView
                     _registrationView.Run();
                     break;
 
-                // case 2: _loginView.Run(); break;  <-- Issue #2 slot
-
                 case 2:
+                    var user = _loginView.Run();
+                    if (user.Role == UserRole.Administrator)
+                        _adminMenuView.Run(user);
+                    else
+                        _customerMenuView.Run(user);
+                    break;
+
+                case 3:
                     ConsoleHelper.WriteInfo("Thank you for using ShopSmart. Goodbye!");
                     return;
             }

@@ -10,7 +10,6 @@ public class AppData
 {
     public List<User> Users { get; } = [];
 
-    // Future collections (Products, Orders, CartItems, Reviews, etc.) are added here.
 
     private int _nextUserId = 1;
     public int NextUserId() => _nextUserId++;
