@@ -16,6 +16,8 @@ public class CustomerMenuView
     private readonly WalletBalanceView  _walletBalanceView;
     private readonly AddWalletFundsView _addWalletFundsView;
     private readonly OrderHistoryView   _orderHistoryView;
+    private readonly TrackOrderView     _trackOrderView;
+    private readonly ReviewProductsView _reviewProductsView;
 
     public CustomerMenuView(
         IProductService    productService,
@@ -28,7 +30,9 @@ public class CustomerMenuView
         CheckoutView       checkoutView,
         WalletBalanceView  walletBalanceView,
         AddWalletFundsView addWalletFundsView,
-        OrderHistoryView   orderHistoryView)
+        OrderHistoryView   orderHistoryView,
+        TrackOrderView     trackOrderView,
+        ReviewProductsView reviewProductsView)
     {
         _productService     = productService;
         _browseView         = browseView;
@@ -41,6 +45,8 @@ public class CustomerMenuView
         _walletBalanceView  = walletBalanceView;
         _addWalletFundsView = addWalletFundsView;
         _orderHistoryView   = orderHistoryView;
+        _trackOrderView     = trackOrderView;
+        _reviewProductsView = reviewProductsView;
     }
 
     /// <summary>Runs the customer menu loop. Returns when the user logs out.</summary>
@@ -59,6 +65,8 @@ public class CustomerMenuView
                 "View Wallet Balance",
                 "Add Wallet Funds",
                 "Order History",
+                "Track Order",
+                "Review Products",
                 "Logout"
             ];
 
@@ -66,17 +74,19 @@ public class CustomerMenuView
 
             switch (choice)
             {
-                case 1: _browseView.Run();                        break;
-                case 2: _searchView.Run();                        break;
-                case 3: _addToCartView.Run(currentUser);          break;
-                case 4: _viewCartView.Run(currentUser);           break;
-                case 5: _updateCartView.Run(currentUser);         break;
-                case 6: _checkoutView.Run(currentUser);           break;
-                case 7: _walletBalanceView.Run(currentUser);      break;
-                case 8: _addWalletFundsView.Run(currentUser);     break;
-                case 9: _orderHistoryView.Run(currentUser);       break;
+                case 1:  _browseView.Run();                        break;
+                case 2:  _searchView.Run();                        break;
+                case 3:  _addToCartView.Run(currentUser);          break;
+                case 4:  _viewCartView.Run(currentUser);           break;
+                case 5:  _updateCartView.Run(currentUser);         break;
+                case 6:  _checkoutView.Run(currentUser);           break;
+                case 7:  _walletBalanceView.Run(currentUser);      break;
+                case 8:  _addWalletFundsView.Run(currentUser);     break;
+                case 9:  _orderHistoryView.Run(currentUser);       break;
+                case 10: _trackOrderView.Run(currentUser);         break;
+                case 11: _reviewProductsView.Run(currentUser);     break;
 
-                case 10: // Logout (always last)
+                case 12: // Logout (always last)
                     ConsoleHelper.WriteInfo("Logged out successfully.");
                     ConsoleHelper.PressAnyKey();
                     return;
