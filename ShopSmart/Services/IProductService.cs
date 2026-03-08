@@ -28,4 +28,10 @@ public interface IProductService
 
     /// <summary>Soft-deletes a product by marking it inactive. Throws <see cref="ValidationException"/> if not found.</summary>
     void DeleteProduct(int id);
+
+    /// <summary>Adds units to an active product's stock. Throws <see cref="ValidationException"/> if not found or amount ≤ 0.</summary>
+    Product RestockProduct(int id, int additionalStock);
+
+    /// <summary>Returns all products including inactive ones, ordered by category then name.</summary>
+    IReadOnlyList<Product> GetAll();
 }

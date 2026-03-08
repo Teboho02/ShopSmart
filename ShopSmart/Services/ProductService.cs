@@ -91,4 +91,25 @@ public class ProductService : IProductService
         product.IsActive = false;
         _repo.Save();
     }
+
+    public Product RestockProduct(int id, int additionalStock)
+    {
+        var product = _repo.FindById(id);
+        if (product is null || !product.IsActive)
+            throw new ValidationException("Product not found.");
+
+        if (additionalStock <= 0)
+            throw new ValidationException("Restock amount must be greater than zero.");
+
+        product.Stock += additionalStock;
+        _repo.Save();
+        return product;
+    }
+
+    public IReadOnlyList<Product> GetAll() =>
+        _repo.GetAll()
+             .OrderBy(p => p.Category)
+             .ThenBy(p => p.Name)
+             .ToList()
+             .AsReadOnly();
 }
