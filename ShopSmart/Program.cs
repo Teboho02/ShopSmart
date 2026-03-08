@@ -38,7 +38,10 @@ var customerMenuView   = new ShopSmart.UI.CustomerMenuView(
                              walletBalanceView, addWalletFundsView, orderHistoryView,
                              trackOrderView, reviewProductsView);
 var addProductView    = new ShopSmart.UI.AddProductView(productService);
-var adminMenuView     = new ShopSmart.UI.AdminMenuView(productService, addProductView);
+var updateProductView = new ShopSmart.UI.UpdateProductView(productService);
+var deleteProductView = new ShopSmart.UI.DeleteProductView(productService);
+var adminMenuView     = new ShopSmart.UI.AdminMenuView(productService, addProductView,
+                                                       updateProductView, deleteProductView);
 var mainMenu          = new ShopSmart.UI.MainMenuView(
                             userService, registrationView, loginView,
                             customerMenuView, adminMenuView);

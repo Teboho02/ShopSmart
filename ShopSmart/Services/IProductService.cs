@@ -22,4 +22,10 @@ public interface IProductService
     /// Throws <see cref="ValidationException"/> on invalid input.
     /// </summary>
     Product AddProduct(string name, string description, string category, decimal price, int stock);
+
+    /// <summary>Updates an existing active product. Throws <see cref="ValidationException"/> if not found or input invalid.</summary>
+    Product UpdateProduct(int id, string name, string description, string category, decimal price, int stock);
+
+    /// <summary>Soft-deletes a product by marking it inactive. Throws <see cref="ValidationException"/> if not found.</summary>
+    void DeleteProduct(int id);
 }
