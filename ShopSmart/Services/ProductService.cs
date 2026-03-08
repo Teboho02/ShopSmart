@@ -29,4 +29,29 @@ public class ProductService : IProductService
              .ThenBy(p => p.Name)
              .ToList()
              .AsReadOnly();
+
+    public Product AddProduct(string name, string description, string category, decimal price, int stock)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+            throw new ValidationException("Product name cannot be empty.");
+        if (string.IsNullOrWhiteSpace(description))
+            throw new ValidationException("Description cannot be empty.");
+        if (string.IsNullOrWhiteSpace(category))
+            throw new ValidationException("Category cannot be empty.");
+        if (price <= 0)
+            throw new ValidationException("Price must be greater than zero.");
+        if (stock < 0)
+            throw new ValidationException("Stock cannot be negative.");
+
+        var product = new Product(
+            _repo.NextProductId(),
+            name.Trim(),
+            description.Trim(),
+            category.Trim(),
+            price,
+            stock);
+
+        _repo.Add(product);
+        return product;
+    }
 }

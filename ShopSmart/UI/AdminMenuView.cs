@@ -1,11 +1,18 @@
 namespace ShopSmart.UI;
 
 using ShopSmart.Models;
+using ShopSmart.Services;
 
 public class AdminMenuView
 {
-    // Future: IProductService injected here as a constructor parameter
-    // when Issues #14–#18 are implemented.
+    private readonly IProductService _productService;
+    private readonly AddProductView  _addProductView;
+
+    public AdminMenuView(IProductService productService, AddProductView addProductView)
+    {
+        _productService = productService;
+        _addProductView = addProductView;
+    }
 
     /// <summary>Runs the administrator menu loop. Returns when the user logs out.</summary>
     public void Run(User currentUser)
@@ -14,7 +21,7 @@ public class AdminMenuView
         {
             string[] options =
             [
-                // Issues #14–#18 options will be inserted above Logout.
+                "Add Product",
                 "Logout"
             ];
 
@@ -22,7 +29,9 @@ public class AdminMenuView
 
             switch (choice)
             {
-                case 1: // Logout (last option — always keep this last)
+                case 1: _addProductView.Run(); break;
+
+                case 2: // Logout (always last)
                     ConsoleHelper.WriteInfo("Logged out successfully.");
                     ConsoleHelper.PressAnyKey();
                     return;

@@ -16,4 +16,10 @@ public interface IProductService
     /// Returns an empty list when nothing matches.
     /// </summary>
     IReadOnlyList<Product> SearchActive(string searchTerm);
+
+    /// <summary>
+    /// Validates inputs and creates a new active product.
+    /// Throws <see cref="ValidationException"/> on invalid input.
+    /// </summary>
+    Product AddProduct(string name, string description, string category, decimal price, int stock);
 }
