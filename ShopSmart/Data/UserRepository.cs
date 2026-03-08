@@ -4,12 +4,28 @@ using ShopSmart.Models;
 
 public class UserRepository
 {
+    private static readonly string FilePath =
+        Path.Combine(AppContext.BaseDirectory, "data", "users.json");
+
     private readonly AppData _data;
+    private int _nextId = 1;
 
-    public UserRepository(AppData data) => _data = data;
+    public UserRepository(AppData data)
+    {
+        _data = data;
 
-    public void Add(User user) =>
+        var loaded = JsonFileStore.Load<User>(FilePath);
+        _data.Users.AddRange(loaded);
+
+        if (loaded.Count > 0)
+            _nextId = loaded.Max(u => u.Id) + 1;
+    }
+
+    public void Add(User user)
+    {
         _data.Users.Add(user);
+        JsonFileStore.Save(FilePath, _data.Users);
+    }
 
     public User? FindById(int id) =>
         _data.Users.FirstOrDefault(u => u.Id == id);
@@ -25,5 +41,5 @@ public class UserRepository
     public IReadOnlyList<User> GetAll() =>
         _data.Users.AsReadOnly();
 
-    public int NextUserId() => _data.NextUserId();
+    public int NextUserId() => _nextId++;
 }
