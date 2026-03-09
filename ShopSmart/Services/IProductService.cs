@@ -34,4 +34,7 @@ public interface IProductService
 
     /// <summary>Returns all products including inactive ones, ordered by category then name.</summary>
     IReadOnlyList<Product> GetAll();
+
+    /// <summary>Returns active products with stock at or below the threshold, ordered by stock ascending then name.</summary>
+    IReadOnlyList<Product> GetLowStock(int threshold = 5);
 }

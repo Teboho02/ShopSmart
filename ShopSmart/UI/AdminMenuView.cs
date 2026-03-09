@@ -12,6 +12,7 @@ public class AdminMenuView
     private readonly RestockProductView    _restockProductView;
     private readonly ViewAllProductsView   _viewAllProductsView;
     private readonly UpdateOrderStatusView _updateOrderStatusView;
+    private readonly LowStockView          _lowStockView;
 
     public AdminMenuView(
         IProductService        productService,
@@ -20,7 +21,8 @@ public class AdminMenuView
         DeleteProductView      deleteProductView,
         RestockProductView     restockProductView,
         ViewAllProductsView    viewAllProductsView,
-        UpdateOrderStatusView  updateOrderStatusView)
+        UpdateOrderStatusView  updateOrderStatusView,
+        LowStockView           lowStockView)
     {
         _productService        = productService;
         _addProductView        = addProductView;
@@ -29,6 +31,7 @@ public class AdminMenuView
         _restockProductView    = restockProductView;
         _viewAllProductsView   = viewAllProductsView;
         _updateOrderStatusView = updateOrderStatusView;
+        _lowStockView          = lowStockView;
     }
 
     /// <summary>Runs the administrator menu loop. Returns when the user logs out.</summary>
@@ -36,6 +39,10 @@ public class AdminMenuView
     {
         while (true)
         {
+            var lowCount  = _productService.GetLowStock().Count;
+            var badge     = lowCount > 0 ? $"  ⚠ {lowCount} low stock" : string.Empty;
+            var menuTitle = $"Administrator Menu – {currentUser.Username}{badge}";
+
             string[] options =
             [
                 "Add Product",
@@ -44,21 +51,23 @@ public class AdminMenuView
                 "Restock Product",
                 "View All Products",
                 "Update Order Status",
+                "Low Stock Report",
                 "Logout"
             ];
 
-            int choice = MenuRenderer.Show($"Administrator Menu – {currentUser.Username}", options);
+            int choice = MenuRenderer.Show(menuTitle, options);
 
             switch (choice)
             {
-                case 1: _addProductView.Run();      break;
-                case 2: _updateProductView.Run();   break;
-                case 3: _deleteProductView.Run();   break;
-                case 4: _restockProductView.Run();  break;
+                case 1: _addProductView.Run();        break;
+                case 2: _updateProductView.Run();     break;
+                case 3: _deleteProductView.Run();     break;
+                case 4: _restockProductView.Run();    break;
                 case 5: _viewAllProductsView.Run();   break;
                 case 6: _updateOrderStatusView.Run(); break;
+                case 7: _lowStockView.Run();          break;
 
-                case 7: // Logout (always last)
+                case 8: // Logout (always last)
                     ConsoleHelper.WriteInfo("Logged out successfully.");
                     ConsoleHelper.PressAnyKey();
                     return;
