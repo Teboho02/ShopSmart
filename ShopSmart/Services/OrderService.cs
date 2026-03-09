@@ -3,6 +3,7 @@ namespace ShopSmart.Services;
 using ShopSmart.Data;
 using ShopSmart.Enums;
 using ShopSmart.Models;
+using ShopSmart.Services.States;
 
 public class OrderService : IOrderService
 {
@@ -108,18 +109,33 @@ public class OrderService : IOrderService
                   .ToList()
                   .AsReadOnly();
 
-    public Order UpdateOrderStatus(int orderId, OrderStatus newStatus)
+    public IOrderState GetOrderState(int orderId)
     {
         var order = _orderRepo.FindById(orderId)
             ?? throw new ValidationException($"Order #{orderId} not found.");
+        return OrderStateFactory.For(order.Status);
+    }
 
-        if (order.Status == OrderStatus.Delivered)
-            throw new ValidationException("Delivered orders cannot be updated.");
+    public Order AdvanceOrderStatus(int orderId)
+    {
+        var order = _orderRepo.FindById(orderId)
+            ?? throw new ValidationException($"Order #{orderId} not found.");
+        var state = OrderStateFactory.For(order.Status);
+        if (state.Next is null)
+            throw new ValidationException($"Order is {order.Status} and cannot be advanced.");
+        order.Status = state.Next.Value;
+        _orderRepo.Save();
+        return order;
+    }
 
-        if (order.Status == OrderStatus.Cancelled)
-            throw new ValidationException("Cancelled orders cannot be updated.");
-
-        order.Status = newStatus;
+    public Order CancelOrder(int orderId)
+    {
+        var order = _orderRepo.FindById(orderId)
+            ?? throw new ValidationException($"Order #{orderId} not found.");
+        var state = OrderStateFactory.For(order.Status);
+        if (!state.CanCancel)
+            throw new ValidationException($"Order is {order.Status} and cannot be cancelled.");
+        order.Status = OrderStatus.Cancelled;
         _orderRepo.Save();
         return order;
     }

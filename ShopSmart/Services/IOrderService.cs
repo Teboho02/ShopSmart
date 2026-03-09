@@ -1,7 +1,7 @@
 namespace ShopSmart.Services;
 
-using ShopSmart.Enums;
 using ShopSmart.Models;
+using ShopSmart.Services.States;
 
 public interface IOrderService
 {
@@ -22,8 +22,19 @@ public interface IOrderService
     IReadOnlyList<Order> GetAllOrders();
 
     /// <summary>
-    /// Updates an order's status. Throws <see cref="ValidationException"/> if the order
-    /// is not found or is already in a terminal state (Delivered or Cancelled).
+    /// Returns the current state object for the given order.
+    /// Throws <see cref="ValidationException"/> if the order is not found.
     /// </summary>
-    Order UpdateOrderStatus(int orderId, OrderStatus newStatus);
+    IOrderState GetOrderState(int orderId);
+
+    /// <summary>
+    /// Advances the order to its next sequential status.
+    /// Throws <see cref="ValidationException"/> if the order is not found or is in a terminal state.
+    /// </summary>
+    Order AdvanceOrderStatus(int orderId);
+
+    /// <summary>
+    /// Cancels the order. Throws <see cref="ValidationException"/> if already terminal.
+    /// </summary>
+    Order CancelOrder(int orderId);
 }

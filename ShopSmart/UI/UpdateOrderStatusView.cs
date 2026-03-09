@@ -3,6 +3,7 @@ namespace ShopSmart.UI;
 using ShopSmart.Enums;
 using ShopSmart.Models;
 using ShopSmart.Services;
+using ShopSmart.Services.States;
 
 public class UpdateOrderStatusView
 {
@@ -51,7 +52,9 @@ public class UpdateOrderStatusView
                 continue;
             }
 
-            if (order.Status == OrderStatus.Delivered || order.Status == OrderStatus.Cancelled)
+            var state = _orderService.GetOrderState(orderId);
+
+            if (!state.CanCancel && state.Next is null)
             {
                 ConsoleHelper.WriteError($"Order #{orderId} is {order.Status} and cannot be updated.");
                 ConsoleHelper.PressAnyKey();
@@ -62,21 +65,22 @@ public class UpdateOrderStatusView
             ConsoleHelper.WriteInfo($"  Order #{order.Id} — current status: {order.Status}");
             Console.WriteLine();
 
-            string[] statusNames = ["Pending", "Processing", "Shipped", "Delivered", "Cancelled"];
-            int choice = MenuRenderer.Show("Select New Status", statusNames);
+            var options = new List<string>();
+            if (state.NextLabel is not null) options.Add(state.NextLabel);
+            if (state.CanCancel)             options.Add("Cancel Order");
+            options.Add("Go Back");
 
-            var newStatus = (OrderStatus)(choice - 1);
+            int choice = MenuRenderer.Show("Select Action", options);
+            string chosen = options[choice - 1];
 
-            if (newStatus == order.Status)
-            {
-                ConsoleHelper.WriteWarning("Status unchanged.");
-                ConsoleHelper.PressAnyKey();
-                continue;
-            }
+            if (chosen == "Go Back") continue;
 
             try
             {
-                var updated = _orderService.UpdateOrderStatus(orderId, newStatus);
+                Order updated = chosen == "Cancel Order"
+                    ? _orderService.CancelOrder(orderId)
+                    : _orderService.AdvanceOrderStatus(orderId);
+
                 Console.WriteLine();
                 ConsoleHelper.WriteSuccess($"Order #{updated.Id} status updated to {updated.Status}.");
             }
