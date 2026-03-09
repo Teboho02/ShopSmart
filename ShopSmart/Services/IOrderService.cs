@@ -38,4 +38,7 @@ public interface IOrderService
     /// Cancels the order. Throws <see cref="ValidationException"/> if already terminal.
     /// </summary>
     Order CancelOrder(int orderId);
+
+    /// <summary>Returns aggregated sales metrics across all orders.</summary>
+    SalesReport GetSalesReport();
 }

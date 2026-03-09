@@ -44,10 +44,12 @@ var restockProductView     = new ShopSmart.UI.RestockProductView(productService)
 var viewAllProductsView    = new ShopSmart.UI.ViewAllProductsView(productService);
 var updateOrderStatusView  = new ShopSmart.UI.UpdateOrderStatusView(orderService, userService);
 var lowStockView           = new ShopSmart.UI.LowStockView(productService);
+var salesReportView        = new ShopSmart.UI.SalesReportView(orderService);
 var adminMenuView          = new ShopSmart.UI.AdminMenuView(productService, addProductView,
                                                             updateProductView, deleteProductView,
                                                             restockProductView, viewAllProductsView,
-                                                            updateOrderStatusView, lowStockView);
+                                                            updateOrderStatusView, lowStockView,
+                                                            salesReportView);
 var mainMenu          = new ShopSmart.UI.MainMenuView(
                             userService, registrationView, loginView,
                             customerMenuView, adminMenuView);
