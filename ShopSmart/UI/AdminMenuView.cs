@@ -13,6 +13,7 @@ public class AdminMenuView
     private readonly ViewAllProductsView   _viewAllProductsView;
     private readonly UpdateOrderStatusView _updateOrderStatusView;
     private readonly LowStockView          _lowStockView;
+    private readonly SalesReportView       _salesReportView;
 
     public AdminMenuView(
         IProductService        productService,
@@ -22,7 +23,8 @@ public class AdminMenuView
         RestockProductView     restockProductView,
         ViewAllProductsView    viewAllProductsView,
         UpdateOrderStatusView  updateOrderStatusView,
-        LowStockView           lowStockView)
+        LowStockView           lowStockView,
+        SalesReportView        salesReportView)
     {
         _productService        = productService;
         _addProductView        = addProductView;
@@ -32,6 +34,7 @@ public class AdminMenuView
         _viewAllProductsView   = viewAllProductsView;
         _updateOrderStatusView = updateOrderStatusView;
         _lowStockView          = lowStockView;
+        _salesReportView       = salesReportView;
     }
 
     /// <summary>Runs the administrator menu loop. Returns when the user logs out.</summary>
@@ -52,6 +55,7 @@ public class AdminMenuView
                 "View All Products",
                 "Update Order Status",
                 "Low Stock Report",
+                "Sales Report",
                 "Logout"
             ];
 
@@ -66,8 +70,9 @@ public class AdminMenuView
                 case 5: _viewAllProductsView.Run();   break;
                 case 6: _updateOrderStatusView.Run(); break;
                 case 7: _lowStockView.Run();          break;
+                case 8: _salesReportView.Run();       break;
 
-                case 8: // Logout (always last)
+                case 9: // Logout (always last)
                     ConsoleHelper.WriteInfo("Logged out successfully.");
                     ConsoleHelper.PressAnyKey();
                     return;

@@ -136,4 +136,33 @@ public class OrderService : IOrderService
         _orderRepo.Save();
         return order;
     }
+
+    public ShopSmart.Models.SalesReport GetSalesReport()
+    {
+        var allOrders    = _orderRepo.GetAll();
+        var nonCancelled = allOrders.Where(o => o.Status != OrderStatus.Cancelled).ToList();
+
+        decimal totalRevenue  = nonCancelled.Sum(o => o.Total);
+        int     totalOrders   = nonCancelled.Count;
+        decimal avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0m;
+
+        var ordersByStatus = Enum.GetValues<OrderStatus>()
+            .Select(s => (Status: s, Count: allOrders.Count(o => o.Status == s)))
+            .ToList()
+            .AsReadOnly();
+
+        var topProducts = nonCancelled
+            .SelectMany(o => o.Items)
+            .GroupBy(i => i.ProductName)
+            .Select(g => (
+                ProductName: g.Key,
+                UnitsSold:   g.Sum(i => i.Quantity),
+                Revenue:     g.Sum(i => i.LineTotal)))
+            .OrderByDescending(x => x.UnitsSold)
+            .Take(5)
+            .ToList()
+            .AsReadOnly();
+
+        return new ShopSmart.Models.SalesReport(totalOrders, totalRevenue, avgOrderValue, ordersByStatus, topProducts);
+    }
 }
