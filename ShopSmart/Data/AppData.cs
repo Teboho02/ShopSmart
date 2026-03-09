@@ -15,4 +15,5 @@ public class AppData
     public List<Order>    Orders    { get; } = [];
     public List<Payment>  Payments  { get; } = [];
     public List<Review>   Reviews   { get; } = [];
+    public List<Voucher>  Vouchers  { get; } = [];
 }

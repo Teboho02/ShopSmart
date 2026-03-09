@@ -3,6 +3,7 @@ namespace ShopSmart.Services;
 using ShopSmart.Data;
 using ShopSmart.Enums;
 using ShopSmart.Models;
+using ShopSmart.Services.Payments;
 using ShopSmart.Services.States;
 
 public class OrderService : IOrderService
@@ -30,7 +31,7 @@ public class OrderService : IOrderService
         _userRepo       = userRepo;
     }
 
-    public Order Checkout(User user)
+    public Order Checkout(User user, IPaymentStrategy paymentStrategy)
     {
         var cartItems = _cartRepo.GetByUser(user.Id);
 
@@ -39,9 +40,9 @@ public class OrderService : IOrderService
 
         decimal total = cartItems.Sum(i => i.UnitPrice * i.Quantity);
 
-        if (user.WalletBalance < total)
-            throw new ValidationException(
-                $"Insufficient wallet balance. Balance: {user.WalletBalance:C}, Order total: {total:C}.");
+        // Execute payment first — throws ValidationException on failure.
+        // Stock is only reduced after successful payment.
+        PaymentStatus paymentStatus = paymentStrategy.Execute(user, total);
 
         // Re-validate stock and reduce it
         foreach (var item in cartItems)
@@ -69,24 +70,20 @@ public class OrderService : IOrderService
             OrderStatus.Pending,
             orderItems,
             total,
-            "Wallet");
+            paymentStrategy.MethodName);
 
         _orderRepo.Add(order);
 
-        // Create Payment
+        // Create Payment record
         var payment = new Payment(
             _paymentRepo.NextPaymentId(),
             order.Id,
             total,
-            "Wallet",
-            PaymentStatus.Completed,
+            paymentStrategy.MethodName,
+            paymentStatus,
             DateTime.UtcNow);
 
         _paymentRepo.Add(payment);
-
-        // Deduct wallet and persist
-        user.WalletBalance -= total;
-        _userRepo.Save();
 
         // Clear cart
         _cartRepo.Clear(user.Id);

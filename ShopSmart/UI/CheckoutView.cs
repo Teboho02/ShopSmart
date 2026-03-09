@@ -2,22 +2,22 @@ namespace ShopSmart.UI;
 
 using ShopSmart.Models;
 using ShopSmart.Services;
+using ShopSmart.Services.Payments;
 
 public class CheckoutView
 {
-    private readonly ICartService  _cartService;
-    private readonly IOrderService _orderService;
+    private readonly ICartService          _cartService;
+    private readonly IOrderService         _orderService;
+    private readonly PaymentStrategyFactory _factory;
 
-    public CheckoutView(ICartService cartService, IOrderService orderService)
+    public CheckoutView(ICartService cartService, IOrderService orderService,
+                        PaymentStrategyFactory factory)
     {
         _cartService  = cartService;
         _orderService = orderService;
+        _factory      = factory;
     }
 
-    /// <summary>
-    /// Shows the order summary and wallet balance, prompts for confirmation,
-    /// then calls OrderService.Checkout on approval.
-    /// </summary>
     public void Run(User currentUser)
     {
         ConsoleHelper.ClearScreen("Checkout");
@@ -35,25 +35,80 @@ public class CheckoutView
         ViewCartView.RenderCartTable(items);
 
         decimal total = items.Sum(i => i.UnitPrice * i.Quantity);
-
         Console.WriteLine();
-        ConsoleHelper.WriteInfo($"  Wallet balance : {currentUser.WalletBalance:C}");
-        ConsoleHelper.WriteInfo($"  Order total    : {total:C}");
+        ConsoleHelper.WriteInfo($"  Order total : {total:C}");
 
-        decimal remaining = currentUser.WalletBalance - total;
-        if (remaining < 0)
+        // Select payment method
+        Console.WriteLine();
+        int methodChoice = MenuRenderer.Show("Select Payment Method",
+            ["Wallet", "EFT", "PayPal", "Voucher"]);
+
+        IPaymentStrategy strategy;
+
+        switch (methodChoice)
         {
-            Console.WriteLine();
-            ConsoleHelper.WriteError(
-                $"Insufficient wallet balance. You need {Math.Abs(remaining):C} more.");
-            ConsoleHelper.WriteWarning("Please top up your wallet before checking out.");
-            ConsoleHelper.PressAnyKey();
-            return;
+            case 1: // Wallet
+                Console.WriteLine();
+                ConsoleHelper.WriteInfo($"  Wallet balance : {currentUser.WalletBalance:C}");
+                decimal remaining = currentUser.WalletBalance - total;
+                if (remaining < 0)
+                {
+                    Console.WriteLine();
+                    ConsoleHelper.WriteError(
+                        $"Insufficient wallet balance. You need {Math.Abs(remaining):C} more.");
+                    ConsoleHelper.WriteWarning("Please top up your wallet or choose another payment method.");
+                    ConsoleHelper.PressAnyKey();
+                    return;
+                }
+                ConsoleHelper.WriteInfo($"  Balance after  : {remaining:C}");
+                strategy = _factory.Wallet();
+                break;
+
+            case 2: // EFT
+                Console.WriteLine();
+                ConsoleHelper.WriteInfo("  Transfer the exact amount to:");
+                Console.WriteLine("  Bank    : FNB");
+                Console.WriteLine("  Account : 62312345678");
+                Console.WriteLine("  Branch  : 250655");
+                Console.WriteLine($"  Amount  : {total:C}");
+                Console.WriteLine("  Ref     : Your order number (shown after placing)");
+                Console.WriteLine();
+                ConsoleHelper.WriteWarning("  Your order will be marked Pending until payment is confirmed.");
+                strategy = _factory.Eft();
+                break;
+
+            case 3: // PayPal
+                Console.WriteLine();
+                Console.Write("  PayPal email: ");
+                string email = Console.ReadLine()?.Trim() ?? string.Empty;
+                if (!email.Contains('@'))
+                {
+                    ConsoleHelper.WriteError("Please enter a valid PayPal email address.");
+                    ConsoleHelper.PressAnyKey();
+                    return;
+                }
+                strategy = _factory.PayPal(email);
+                break;
+
+            case 4: // Voucher
+                Console.WriteLine();
+                Console.Write("  Voucher code: ");
+                string code = Console.ReadLine()?.Trim() ?? string.Empty;
+                if (string.IsNullOrEmpty(code))
+                {
+                    ConsoleHelper.WriteError("Please enter a voucher code.");
+                    ConsoleHelper.PressAnyKey();
+                    return;
+                }
+                ConsoleHelper.WriteInfo("  Any shortfall will be charged to your wallet.");
+                strategy = _factory.Voucher(code);
+                break;
+
+            default:
+                return;
         }
 
-        ConsoleHelper.WriteInfo($"  Balance after  : {remaining:C}");
-
-        // Confirmation prompt
+        // Confirm
         Console.WriteLine();
         Console.Write("  Confirm order? [Y/N]: ");
         string answer = Console.ReadLine()?.Trim().ToUpperInvariant() ?? "N";
@@ -68,10 +123,20 @@ public class CheckoutView
         // Place order
         try
         {
-            var order = _orderService.Checkout(currentUser);
+            var order = _orderService.Checkout(currentUser, strategy);
             Console.WriteLine();
-            ConsoleHelper.WriteSuccess($"Order #{order.Id} placed successfully!");
-            ConsoleHelper.WriteSuccess($"New wallet balance: {currentUser.WalletBalance:C}");
+
+            if (strategy.MethodName == "EFT")
+            {
+                ConsoleHelper.WriteSuccess($"Order #{order.Id} placed.");
+                ConsoleHelper.WriteWarning($"Awaiting EFT payment of {total:C}. Use Order #{order.Id} as your reference.");
+            }
+            else
+            {
+                ConsoleHelper.WriteSuccess($"Order #{order.Id} placed successfully!");
+                if (strategy.MethodName == "Wallet")
+                    ConsoleHelper.WriteSuccess($"New wallet balance: {currentUser.WalletBalance:C}");
+            }
         }
         catch (ValidationException ex)
         {

@@ -1,16 +1,17 @@
 namespace ShopSmart.Services;
 
 using ShopSmart.Models;
+using ShopSmart.Services.Payments;
 using ShopSmart.Services.States;
 
 public interface IOrderService
 {
     /// <summary>
-    /// Processes checkout for the user: validates wallet balance and stock,
-    /// reduces stock, creates Order and Payment records, deducts wallet, clears cart.
-    /// Returns the placed Order. Throws <see cref="ValidationException"/> on any failure.
+    /// Processes checkout using the supplied payment strategy. The strategy validates
+    /// and executes the payment before stock is reduced. Throws <see cref="ValidationException"/>
+    /// on any failure.
     /// </summary>
-    Order Checkout(User user);
+    Order Checkout(User user, IPaymentStrategy paymentStrategy);
 
     /// <summary>Returns all orders for the user sorted by most recent first.</summary>
     IReadOnlyList<Order> GetOrderHistory(int userId);
