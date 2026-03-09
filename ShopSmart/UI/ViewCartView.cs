@@ -29,7 +29,7 @@ public class ViewCartView
     }
 
     /// <summary>Renders the cart table. Can be reused by other views (e.g. Checkout).</summary>
-    internal static void RenderCartTable(IReadOnlyList<CartItem> items)
+    public static void RenderCartTable(IReadOnlyList<CartItem> items)
     {
         Console.WriteLine();
         Console.WriteLine($"  {"Product",-30} {"Qty",4}  {"Unit Price",10}  {"Subtotal",10}");

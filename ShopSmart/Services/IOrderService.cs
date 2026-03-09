@@ -1,5 +1,6 @@
 namespace ShopSmart.Services;
 
+using ShopSmart.Enums;
 using ShopSmart.Models;
 
 public interface IOrderService
@@ -16,4 +17,13 @@ public interface IOrderService
 
     /// <summary>Returns the payment for a given order, or null if not found.</summary>
     Payment? GetPaymentForOrder(int orderId);
+
+    /// <summary>Returns all orders across all users, sorted by most recent first.</summary>
+    IReadOnlyList<Order> GetAllOrders();
+
+    /// <summary>
+    /// Updates an order's status. Throws <see cref="ValidationException"/> if the order
+    /// is not found or is already in a terminal state (Delivered or Cancelled).
+    /// </summary>
+    Order UpdateOrderStatus(int orderId, OrderStatus newStatus);
 }

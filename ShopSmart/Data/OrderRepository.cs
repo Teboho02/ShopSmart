@@ -36,5 +36,7 @@ public class OrderRepository
     public IReadOnlyList<Order> GetAll() =>
         _data.Orders.AsReadOnly();
 
+    public void Save() => JsonFileStore.Save(FilePath, _data.Orders);
+
     public int NextOrderId() => _nextId++;
 }

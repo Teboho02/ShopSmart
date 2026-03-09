@@ -101,4 +101,26 @@ public class OrderService : IOrderService
 
     public Payment? GetPaymentForOrder(int orderId) =>
         _paymentRepo.FindByOrderId(orderId);
+
+    public IReadOnlyList<Order> GetAllOrders() =>
+        _orderRepo.GetAll()
+                  .OrderByDescending(o => o.OrderDate)
+                  .ToList()
+                  .AsReadOnly();
+
+    public Order UpdateOrderStatus(int orderId, OrderStatus newStatus)
+    {
+        var order = _orderRepo.FindById(orderId)
+            ?? throw new ValidationException($"Order #{orderId} not found.");
+
+        if (order.Status == OrderStatus.Delivered)
+            throw new ValidationException("Delivered orders cannot be updated.");
+
+        if (order.Status == OrderStatus.Cancelled)
+            throw new ValidationException("Cancelled orders cannot be updated.");
+
+        order.Status = newStatus;
+        _orderRepo.Save();
+        return order;
+    }
 }

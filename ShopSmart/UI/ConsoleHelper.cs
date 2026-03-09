@@ -4,7 +4,6 @@ using System.Text;
 
 /// <summary>
 /// Low-level console utilities: coloured output, prompts, and masked input.
-/// No business logic lives here.
 /// </summary>
 public static class ConsoleHelper
 {
@@ -21,6 +20,28 @@ public static class ConsoleHelper
 
     public static void WriteInfo(string message) =>
         WriteColoured(message, ConsoleColor.Cyan);
+
+    // --- Inline variants (no newline) ---
+
+    public static void WriteSuccessInline(string message) =>
+        WriteColouredInline(message, ConsoleColor.Green);
+
+    public static void WriteErrorInline(string message) =>
+        WriteColouredInline(message, ConsoleColor.Red);
+
+    public static void WriteWarningInline(string message) =>
+        WriteColouredInline(message, ConsoleColor.Yellow);
+
+    public static void WriteInfoInline(string message) =>
+        WriteColouredInline(message, ConsoleColor.Cyan);
+
+    private static void WriteColouredInline(string text, ConsoleColor colour)
+    {
+        ConsoleColor previous = Console.ForegroundColor;
+        Console.ForegroundColor = colour;
+        Console.Write(text);
+        Console.ForegroundColor = previous;
+    }
 
     public static void WriteHeading(string heading)
     {
