@@ -112,4 +112,12 @@ public class ProductService : IProductService
              .ThenBy(p => p.Name)
              .ToList()
              .AsReadOnly();
+
+    public IReadOnlyList<Product> GetLowStock(int threshold = 5) =>
+        _repo.GetAll()
+             .Where(p => p.IsActive && p.Stock <= threshold)
+             .OrderBy(p => p.Stock)
+             .ThenBy(p => p.Name)
+             .ToList()
+             .AsReadOnly();
 }
