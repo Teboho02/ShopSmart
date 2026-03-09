@@ -8,6 +8,7 @@ var productRepository = new ShopSmart.Data.ProductRepository(appData);
 var orderRepository   = new ShopSmart.Data.OrderRepository(appData);
 var paymentRepository = new ShopSmart.Data.PaymentRepository(appData);
 var cartRepository    = new ShopSmart.Data.CartRepository(appData);
+var voucherRepository = new ShopSmart.Data.VoucherRepository(appData);
 var userService       = new ShopSmart.Services.UserService(userRepository);
 var productService    = new ShopSmart.Services.ProductService(productRepository);
 var cartService       = new ShopSmart.Services.CartService(cartRepository, productService);
@@ -18,10 +19,11 @@ var registrationView  = new ShopSmart.UI.UserRegistrationView(userService);
 var loginView         = new ShopSmart.UI.UserLoginView(userService);
 var browseView        = new ShopSmart.UI.BrowseProductsView(productService);
 var searchView        = new ShopSmart.UI.SearchProductsView(productService);
-var addToCartView     = new ShopSmart.UI.AddToCartView(productService, cartService);
-var viewCartView      = new ShopSmart.UI.ViewCartView(cartService);
-var updateCartView    = new ShopSmart.UI.UpdateCartView(cartService);
-var checkoutView      = new ShopSmart.UI.CheckoutView(cartService, orderService);
+var addToCartView           = new ShopSmart.UI.AddToCartView(productService, cartService);
+var viewCartView            = new ShopSmart.UI.ViewCartView(cartService);
+var updateCartView          = new ShopSmart.UI.UpdateCartView(cartService);
+var paymentStrategyFactory  = new ShopSmart.Services.Payments.PaymentStrategyFactory(userRepository, voucherRepository);
+var checkoutView            = new ShopSmart.UI.CheckoutView(cartService, orderService, paymentStrategyFactory);
 var reviewRepository   = new ShopSmart.Data.ReviewRepository(appData);
 var reviewService      = new ShopSmart.Services.ReviewService(orderRepository, reviewRepository);
 var walletBalanceView  = new ShopSmart.UI.WalletBalanceView();
@@ -41,14 +43,26 @@ var deleteProductView      = new ShopSmart.UI.DeleteProductView(productService);
 var restockProductView     = new ShopSmart.UI.RestockProductView(productService);
 var viewAllProductsView    = new ShopSmart.UI.ViewAllProductsView(productService);
 var updateOrderStatusView  = new ShopSmart.UI.UpdateOrderStatusView(orderService, userService);
+var lowStockView           = new ShopSmart.UI.LowStockView(productService);
 var adminMenuView          = new ShopSmart.UI.AdminMenuView(productService, addProductView,
                                                             updateProductView, deleteProductView,
                                                             restockProductView, viewAllProductsView,
-                                                            updateOrderStatusView);
+                                                            updateOrderStatusView, lowStockView);
 var mainMenu          = new ShopSmart.UI.MainMenuView(
                             userService, registrationView, loginView,
                             customerMenuView, adminMenuView);
 
 
+if (voucherRepository.FindByCode("SAVE10") is null)
+    SeedVouchers(voucherRepository);
+
 mainMenu.Run();
 
+// --- Seed Data ---
+static void SeedVouchers(ShopSmart.Data.VoucherRepository repo)
+{
+    repo.Add(new ShopSmart.Models.Voucher("SAVE10",   10.00m));
+    repo.Add(new ShopSmart.Models.Voucher("SAVE50",   50.00m));
+    repo.Add(new ShopSmart.Models.Voucher("WELCOME",  100.00m));
+    repo.Add(new ShopSmart.Models.Voucher("FREESHIP", 25.00m));
+}

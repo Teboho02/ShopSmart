@@ -1,16 +1,17 @@
 namespace ShopSmart.Services;
 
-using ShopSmart.Enums;
 using ShopSmart.Models;
+using ShopSmart.Services.Payments;
+using ShopSmart.Services.States;
 
 public interface IOrderService
 {
     /// <summary>
-    /// Processes checkout for the user: validates wallet balance and stock,
-    /// reduces stock, creates Order and Payment records, deducts wallet, clears cart.
-    /// Returns the placed Order. Throws <see cref="ValidationException"/> on any failure.
+    /// Processes checkout using the supplied payment strategy. The strategy validates
+    /// and executes the payment before stock is reduced. Throws <see cref="ValidationException"/>
+    /// on any failure.
     /// </summary>
-    Order Checkout(User user);
+    Order Checkout(User user, IPaymentStrategy paymentStrategy);
 
     /// <summary>Returns all orders for the user sorted by most recent first.</summary>
     IReadOnlyList<Order> GetOrderHistory(int userId);
@@ -22,8 +23,19 @@ public interface IOrderService
     IReadOnlyList<Order> GetAllOrders();
 
     /// <summary>
-    /// Updates an order's status. Throws <see cref="ValidationException"/> if the order
-    /// is not found or is already in a terminal state (Delivered or Cancelled).
+    /// Returns the current state object for the given order.
+    /// Throws <see cref="ValidationException"/> if the order is not found.
     /// </summary>
-    Order UpdateOrderStatus(int orderId, OrderStatus newStatus);
+    IOrderState GetOrderState(int orderId);
+
+    /// <summary>
+    /// Advances the order to its next sequential status.
+    /// Throws <see cref="ValidationException"/> if the order is not found or is in a terminal state.
+    /// </summary>
+    Order AdvanceOrderStatus(int orderId);
+
+    /// <summary>
+    /// Cancels the order. Throws <see cref="ValidationException"/> if already terminal.
+    /// </summary>
+    Order CancelOrder(int orderId);
 }
