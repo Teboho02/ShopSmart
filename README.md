@@ -1,127 +1,146 @@
+![.NET Build](https://img.shields.io/badge/build-passing-brightgreen) ![.NET 10](https://img.shields.io/badge/.NET-10-512BD4) ![xUnit Tests](https://img.shields.io/badge/tests-103%20passing-brightgreen)
+
 # ShopSmart
 
-A console-based e-commerce application built with C# and .NET 10. ShopSmart supports two roles — **Customer** and **Administrator** — each with their own menu and feature set. All data is persisted to JSON files so state survives between sessions.
+## What is ShopSmart?
+
+ShopSmart is a console-based e-commerce application built with **C# and .NET 10**. It supports two roles — **Customer** and **Administrator** — each with a dedicated menu and feature set. Customers can browse products, manage a shopping cart, check out using multiple payment methods, track orders, and leave reviews. Administrators can manage the product catalogue and advance order statuses. All data is persisted to JSON files so state survives between sessions.
+
+## Why Choose ShopSmart?
+
+- **Clean architecture** — strict layered design (UI → Services → Data → Models) with no layer bypassing another
+- **Multiple payment methods** — Wallet, EFT, PayPal, and Voucher strategies via the Strategy design pattern
+- **Order state management** — sequential order lifecycle (Pending → Processing → Shipped → Delivered) enforced by the State design pattern
+- **Data integrity** — payment is processed before stock is reduced, preventing inconsistent state on failure
+- **Extensible design** — new payment methods or order states can be added without touching existing code
+- **Full test coverage** — 103 xUnit tests covering all services, payment strategies, and order states
+- **JSON persistence** — lightweight file-based storage; no database setup required
 
 ---
 
-## Features
+# Documentation
 
-### Customer
-| Feature | Description |
-|---|---|
-| Register / Login | Create an account or sign in with username and password |
-| Browse Products | View all available products grouped by category |
-| Search Products | Search by product name, description, or category |
-| Shopping Cart | Add, update, and remove items |
-| Checkout | Pay from wallet balance; stock is reserved at checkout |
-| Wallet | View balance and top up funds |
-| Order History | View past orders with itemised details and payment info |
-| Track Order | Visual status pipeline for any order |
-| Review Products | Leave a star rating and comment on delivered items |
+## Software Requirement Specification
 
-### Administrator
-| Feature | Description |
-|---|---|
-| Add Product | Create a new product with name, description, category, price, and stock |
-| Update Product | Edit any field on an existing product |
-| Delete Product | Soft-delete a product (hidden from customers, visible in admin views) |
-| Restock Product | Add stock units to an active product |
-| View All Products | See every product including soft-deleted ones, with Active/Inactive status |
-| Update Order Status | Advance or change any non-terminal order through Pending → Processing → Shipped → Delivered / Cancelled |
+### Overview
+
+ShopSmart is a command-line e-commerce platform. Users register and log in with a username and password. Customers top up a wallet, browse and search a product catalogue, add items to a cart, and check out using a payment method of their choice. Administrators manage the catalogue and fulfil orders by advancing their status through a defined lifecycle. All business rules are validated in the service layer; views handle only input and output.
+
+### Components and functional requirements
+
+**1. Authentication**
+
+- Users must register with a unique username, unique email address, and a password of at least 6 characters
+- Passwords are stored as hashed values; plain-text passwords are never persisted
+- Login accepts username (case-insensitive) and password; invalid credentials throw a validation error
+- Each user is assigned a role: `Customer` or `Administrator`
+
+**2. Product Catalogue (Administrator)**
+
+- Administrators can add a product with name, description, category, price, and stock quantity
+- Products can be updated (all fields) or soft-deleted (hidden from customers, retained in admin views)
+- Deleted products can be restocked to make them active again
+- All products (active and inactive) are visible to administrators with a clear Active/Inactive status indicator
+
+**3. Product Browsing and Search (Customer)**
+
+- Customers see only active products, grouped by category
+- Search matches against product name, description, and category (case-insensitive)
+- Product detail shows current price, available stock, and average review rating
+
+**4. Shopping Cart (Customer)**
+
+- Customers add products to a cart; adding an existing product increments its quantity
+- The unit price is snapshotted at the time of adding — subsequent price changes do not affect the cart
+- Quantity can be updated (setting it to 0 removes the item); quantity cannot exceed available stock
+- Inactive (deleted) products cannot be added to the cart
+
+**5. Checkout and Payment (Customer)**
+
+- Checkout requires a non-empty cart; the customer selects a payment method before confirming
+- **Wallet** — deducts the total from the user's wallet balance; requires sufficient funds
+- **EFT** — displays bank details; order is placed with `Pending` payment status awaiting external confirmation
+- **PayPal** — prompts for a PayPal email address (must contain `@`); payment is simulated as completed
+- **Voucher** — prompts for a voucher code (case-insensitive lookup); if the voucher value covers the total, the wallet is untouched; if partial, the remainder is charged to the wallet; redeemed or invalid codes are rejected
+- Payment is processed before stock is reduced — a failed payment leaves stock unchanged
+- On success the cart is cleared and an order record is created with payment method and status
+
+**6. Wallet (Customer)**
+
+- Customers can view their current wallet balance
+- Wallet can be topped up with any positive amount
+
+**7. Order History and Tracking (Customer)**
+
+- Customers view their own order history, most recent first
+- Each order shows the order date, total, payment method, payment status, itemised products, and current order status
+- A visual status pipeline shows where an order sits in its lifecycle
+
+**8. Order Status Management (Administrator)**
+
+- Administrators can advance any non-terminal order through its lifecycle: `Pending → Processing → Shipped → Delivered`
+- Any non-terminal order can also be cancelled
+- Terminal orders (`Delivered`, `Cancelled`) cannot be advanced or cancelled — attempting to do so throws a validation error
+
+**9. Reviews (Customer)**
+
+- Customers can review a product after it appears in a delivered order
+- Reviews consist of a star rating (1–5) and a comment
+- Average rating is displayed on the product detail screen
+
+**10. Vouchers**
+
+- Voucher codes are seeded at startup (`SAVE10`, `SAVE50`, `WELCOME`, `FREESHIP`)
+- Each voucher has a monetary value and can only be redeemed once
+- Voucher lookup is case-insensitive; attempting to reuse a redeemed voucher throws a validation error
 
 ---
 
-## Getting Started
+# Design
+
+## [Use Case Diagram](docs/use-case-diagram.png)
+
+> Customer and Administrator actors with their respective use cases.
+
+## [Domain Model](docs/domain-model.png)
+
+> Entities: User, Product, CartItem, Order, OrderItem, Payment, Review, Voucher and their relationships.
+
+## [State Diagram — Order Lifecycle](docs/order-state-diagram.png)
+
+> Pending → Processing → Shipped → Delivered, with Cancelled reachable from any non-terminal state.
+
+## [Architecture Diagram](docs/architecture-diagram.png)
+
+> Layered architecture: UI → Services → Data → Models, with constructor injection wired in Program.cs.
+
+---
+
+# Running application
 
 ### Prerequisites
+
 - [.NET 10 SDK](https://dotnet.microsoft.com/download)
 
-### Run
+### Application
+
 ```bash
 git clone https://github.com/Teboho02/ShopSmart.git
 cd ShopSmart/ShopSmart
 dotnet run
 ```
 
+### Tests
 
-## Data Persistence
-
-All data is stored as JSON in a `data/` folder next to the executable:
-
-| File | Contents |
-|---|---|
-| `users.json` | Accounts, roles, wallet balances |
-| `products.json` | Catalogue including soft-deleted products |
-| `orders.json` | All orders and their current status |
-| `payments.json` | Payment records linked to orders |
-| `carts.json` | Active cart items per user |
-| `reviews.json` | Product reviews submitted by customers |
-
-Delete any file to reset that data. Delete all files to return to the seeded state on next run.
-
----
-
-## Project Structure
-
-```
-ShopSmart/
-├── Enums/
-│   ├── OrderStatus.cs       # Pending, Processing, Shipped, Delivered, Cancelled
-│   ├── PaymentStatus.cs
-│   └── UserRole.cs          # Customer, Administrator
-│
-├── Models/
-│   ├── User.cs
-│   ├── Product.cs           # IsActive flag supports soft-delete
-│   ├── CartItem.cs
-│   ├── OrderItem.cs         # Snapshot of product name/price at purchase time
-│   ├── Order.cs
-│   ├── Payment.cs
-│   └── Review.cs
-│
-├── Data/
-│   ├── AppData.cs           # Shared in-memory store (Unit of Work)
-│   ├── JsonFileStore.cs     # Generic JSON load/save utility
-│   ├── UserRepository.cs
-│   ├── ProductRepository.cs
-│   ├── CartRepository.cs
-│   ├── OrderRepository.cs
-│   ├── PaymentRepository.cs
-│   └── ReviewRepository.cs
-│
-├── Services/
-│   ├── ValidationException.cs
-│   ├── IUserService.cs / UserService.cs
-│   ├── IProductService.cs / ProductService.cs
-│   ├── ICartService.cs / CartService.cs
-│   ├── IOrderService.cs / OrderService.cs
-│   └── IReviewService.cs / ReviewService.cs
-│
-├── UI/
-│   ├── ConsoleHelper.cs     # Coloured output, prompts, masked password input
-│   ├── MenuRenderer.cs      # Consistent numbered-menu rendering
-│   ├── MainMenuView.cs
-│   ├── CustomerMenuView.cs
-│   ├── AdminMenuView.cs
-│   └── ...                  # One view file per feature
-│
-└── Program.cs               # Composition root — wires all dependencies and starts the app
+```bash
+cd ShopSmart/ShopSmart.Tests
+dotnet test
 ```
 
----
+### Development
 
-## Architecture
-
-The codebase follows a strict **layered architecture**:
-
+```bash
+cd ShopSmart/ShopSmart
+dotnet build
+dotnet watch run
 ```
-UI  →  Services  →  Data  →  Models
-```
-
-- Each layer only depends on the layer below it — never above.
-- All dependencies are passed through **constructor injection**; `new` is only called in `Program.cs`.
-- Services depend on **interfaces** (`IProductService`, `IOrderService`, etc.), not concrete classes.
-- Business rules and validation live exclusively in the service layer. Views handle only input and output.
-
----
-
